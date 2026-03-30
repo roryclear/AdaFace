@@ -72,7 +72,7 @@ def infer(model, dataloader, use_flip_test, fusion_method):
     with torch.no_grad():
         for images, idx in tqdm(dataloader):
 
-            feature = model(images.to("cuda:0"))
+            feature = model(images.to("cpu"))
             if isinstance(feature, tuple):
                 feature, norm = feature
             else:
@@ -80,7 +80,7 @@ def infer(model, dataloader, use_flip_test, fusion_method):
 
             if use_flip_test:
                 fliped_images = torch.flip(images, dims=[3])
-                flipped_feature = model(fliped_images.to("cuda:0"))
+                flipped_feature = model(fliped_images.to("cpu"))
                 if isinstance(flipped_feature, tuple):
                     flipped_feature, flipped_norm = flipped_feature
                 else:

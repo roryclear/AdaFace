@@ -83,7 +83,7 @@ def infer_images(model, img_root, landmark_list_path, batch_size, use_flip_test,
     with torch.no_grad():
         for images, idx in tqdm(dataloader):
 
-            feature = model(images.to("cuda:0"))
+            feature = model(images.to("cpu"))
             if isinstance(feature, tuple):
                 feature, norm = feature
             else:
@@ -92,7 +92,7 @@ def infer_images(model, img_root, landmark_list_path, batch_size, use_flip_test,
             if use_flip_test:
                 # infer flipped image and fuse to make a single feature
                 fliped_images = torch.flip(images, dims=[3])
-                flipped_feature = model(fliped_images.to("cuda:0"))
+                flipped_feature = model(fliped_images.to("cpu"))
                 if isinstance(flipped_feature, tuple):
                     flipped_feature, flipped_norm = flipped_feature
                 else:

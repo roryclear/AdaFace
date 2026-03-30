@@ -79,7 +79,7 @@ if __name__ == '__main__':
                 prev_max_idx = idx.max().item()  # order shifting by dataloader checking
                 if iter_idx % 100 == 0:
                     print(f"{iter_idx} / {len(dataloader)} done")
-                feature = model(img.to("cuda:0"))
+                feature = model(img.to("cpu"))
 
                 if isinstance(feature, tuple) and len(feature) == 2:
                     feature, norm = feature
