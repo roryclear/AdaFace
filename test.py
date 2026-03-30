@@ -1,24 +1,25 @@
 from face_alignment import align
 from inference import load_pretrained_model, to_input
+import cv2
+import numpy as np
 
 model = load_pretrained_model('ir_50')
-path = 'messi.jpg'
-aligned_rgb_img = align.get_aligned_face(path)
-bgr_input = to_input(aligned_rgb_img)
-feature, _ = model(bgr_input)
-print("rory feature =",feature, feature.shape)
 
-path = 'messi2.avif'
-aligned_rgb_img = align.get_aligned_face(path)
-bgr_input = to_input(aligned_rgb_img)
+img = cv2.imread('messi_aligned.jpg')
+bgr_input = to_input(img)
+feature, _ = model(bgr_input)
+print("messi feature =", feature, feature.shape)
+
+img = cv2.imread('messi_aligned2.jpg')
+bgr_input = to_input(img)
 feature2, _ = model(bgr_input)
-print("rory feature =",feature, feature.shape)
+print("messi2 feature =", feature2, feature2.shape)
 
 path = 'ronaldo.jpg'
-aligned_rgb_img = align.get_aligned_face(path)
-bgr_input = to_input(aligned_rgb_img)
+img = cv2.imread('ronaldo_aligned.jpg')
+bgr_input = to_input(img)
 feature3, _ = model(bgr_input)
-print("rory feature =",feature, feature.shape)
+print("ronaldo feature =", feature3, feature3.shape)
 
 print("messi to messi2 =", feature @ feature2.T)
 print("messi to ronaldo =", feature @ feature3.T)
