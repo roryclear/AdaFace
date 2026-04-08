@@ -16,7 +16,7 @@ mtcnn_model = mtcnn.MTCNN(device='cpu', crop_size=(112, 112))
 if __name__ == '__main__':
     blazeface = BlazeFace()
 
-    img = cv2.imread("messi.jpg")
+    img = cv2.imread("img3.jpeg")
     img = Tensor(img)
     faces = blazeface(img)[0].numpy()
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     print(facial5points,"\n")
 
 
-    img = Image.open("messi.jpg").convert('RGB')
+    img = Image.open("img3.jpeg").convert('RGB')
     boxes, faces = mtcnn_model.align_multi(img, limit=1)
     face = faces[0]
     aligned_rgb_img = np.array(face)

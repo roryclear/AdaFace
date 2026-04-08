@@ -212,7 +212,6 @@ def warp_and_crop_face(src_img, facial_pts, reference_pts=None, crop_size=(96, 1
     src_pts = np.float32(facial_pts)
 
     trans, _ = get_similarity_transform(src_pts, ref_pts, True)
-    tfm = cvt_tform_mat_for_cv2(trans)
-
+    tfm = trans[:, 0:2].T
     face_img = cv2.warpAffine(src_img, tfm, (crop_size[0], crop_size[1]))
     return face_img
