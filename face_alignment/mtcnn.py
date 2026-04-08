@@ -57,6 +57,7 @@ class MTCNN():
         faces = []
         for landmark in landmarks:
             facial5points = [[landmark[j], landmark[j + 5]] for j in range(5)]
+            print(facial5points)
             warped_face = warp_and_crop_face(np.array(img), facial5points, self.refrence, crop_size=self.crop_size)
             faces.append(Image.fromarray(warped_face))
         return boxes, faces
