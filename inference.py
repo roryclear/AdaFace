@@ -12,6 +12,12 @@ from mtcnn_pytorch.src.matlab_cp2tform import get_similarity_transform_for_cv2
 
 mtcnn_model = mtcnn.MTCNN(device='cpu', crop_size=(112, 112))
 
+REFERENCE_FACIAL_POINTS = [
+    [38.29459953, 51.69630051],
+    [73.53179932, 51.50139999],
+    [56, 71.73660278],
+    [56, 92.3655014 ]
+]
 
 if __name__ == '__main__':
     blazeface = BlazeFace()
