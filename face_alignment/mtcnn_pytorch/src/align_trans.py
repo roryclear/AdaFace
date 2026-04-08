@@ -5,6 +5,8 @@ Created on Mon Apr 24 15:43:29 2017
 """
 import numpy as np
 import cv2
+from numpy.linalg import inv, lstsq
+from numpy.linalg import matrix_rank as rank
 
 # from scipy.linalg import lstsq
 # from scipy.ndimage import geometric_transform  # , map_coordinates
@@ -206,6 +208,37 @@ def get_affine_transform_matrix(src_pts, dst_pts):
 
     return tfm
 
+def findNonreflectiveSimilarity(uv, xy):
+    K = 2
+    M = xy.shape[0]
+    x = xy[:, 0].reshape((-1, 1))
+    y = xy[:, 1].reshape((-1, 1))
+
+    tmp1 = np.hstack((x, y, np.ones((M, 1)), np.zeros((M, 1))))
+    tmp2 = np.hstack((y, -x, np.zeros((M, 1)), np.ones((M, 1))))
+    X = np.vstack((tmp1, tmp2))
+
+    u = uv[:, 0].reshape((-1, 1))
+    v = uv[:, 1].reshape((-1, 1))
+    U = np.vstack((u, v))
+    if rank(X) >= 2 * K:
+        r, _, _, _ = lstsq(X, U)
+        r = np.squeeze(r)
+    else:
+        raise Exception('cp2tform:twoUniquePointsReq')
+
+    sc = r[0]
+    ss = r[1]
+    tx = r[2]
+    ty = r[3]
+    Tinv = np.array([
+        [sc, -ss, 0],
+        [ss,  sc, 0],
+        [tx,  ty, 1]
+    ])
+    T = inv(Tinv)
+    T[:, 2] = np.array([0, 0, 1])
+    return T, Tinv
 
 def findSimilarity(uv, xy):
     trans1, _ = findNonreflectiveSimilarity(uv, xy)
