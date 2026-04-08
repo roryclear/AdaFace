@@ -9,7 +9,7 @@ import cv2
 # from scipy.linalg import lstsq
 # from scipy.ndimage import geometric_transform  # , map_coordinates
 
-from mtcnn_pytorch.src.matlab_cp2tform import findSimilarity, get_similarity_transform, cvt_tform_mat_for_cv2
+from mtcnn_pytorch.src.matlab_cp2tform import findNonreflectiveSimilarity, tformfwd, norm, get_similarity_transform, cvt_tform_mat_for_cv2
 
 # reference facial points, a list of coordinates (x,y)
 REFERENCE_FACIAL_POINTS = [
@@ -206,6 +206,33 @@ def get_affine_transform_matrix(src_pts, dst_pts):
 
     return tfm
 
+
+def findSimilarity(uv, xy, options=None):
+    options = {'K': 2}
+    trans1, _ = findNonreflectiveSimilarity(uv, xy, options)
+    xyR = xy
+    xyR[:, 0] = -1 * xyR[:, 0]
+    trans2r, _ = findNonreflectiveSimilarity(uv, xyR, options)
+    TreflectY = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    trans2 = np.dot(trans2r, TreflectY)
+
+
+    uv1 = np.hstack((uv, np.ones((uv.shape[0], 1))))
+    xy1 = np.dot(uv1, trans1)
+    xy1 = xy1[:, 0:-1]
+
+    norm1 = norm(xy1 - xy)
+
+    uv2 = np.hstack((uv, np.ones((uv.shape[0], 1))))
+    xy2 = np.dot(uv2, trans1)
+    xy2 = xy2[:, 0:-1]
+    norm2 = norm(xy2 - xy)
+
+    
+    if norm1 <= norm2:
+        return trans1
+    else:
+        return trans2
 
 def warp_and_crop_face(src_img, facial_pts, reference_pts=None, crop_size=(96, 112)):
     ref_pts = np.float32(reference_pts)

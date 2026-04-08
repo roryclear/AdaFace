@@ -15,26 +15,7 @@ class MatlabCp2tormException(Exception):
                 __file__, super.__str__(self))
 
 def tformfwd(trans, uv):
-    """
-    Function:
-    ----------
-        apply affine transform 'trans' to uv
-
-    Parameters:
-    ----------
-        @trans: 3x3 np.array
-            transform matrix
-        @uv: Kx2 np.array
-            each row is a pair of coordinates (x, y)
-
-    Returns:
-    ----------
-        @xy: Kx2 np.array
-            each row is a pair of transformed coordinates (x, y)
-    """
-    uv = np.hstack((
-        uv, np.ones((uv.shape[0], 1))
-    ))
+    uv = np.hstack((uv, np.ones((uv.shape[0], 1))))
     xy = np.dot(uv, trans)
     xy = xy[:, 0:-1]
     return xy
@@ -113,27 +94,6 @@ def findNonreflectiveSimilarity(uv, xy, options=None):
     T[:, 2] = np.array([0, 0, 1])
 
     return T, Tinv
-
-
-def findSimilarity(uv, xy, options=None):
-    options = {'K': 2}
-    trans1, _ = findNonreflectiveSimilarity(uv, xy, options)
-    xyR = xy
-    xyR[:, 0] = -1 * xyR[:, 0]
-    trans2r, _ = findNonreflectiveSimilarity(uv, xyR, options)
-    TreflectY = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    trans2 = np.dot(trans2r, TreflectY)
-    xy1 = tformfwd(trans1, uv)
-    norm1 = norm(xy1 - xy)
-
-    xy2 = tformfwd(trans2, uv)
-    norm2 = norm(xy2 - xy)
-
-    
-    if norm1 <= norm2:
-        return trans1
-    else:
-        return trans2
 
 
 def get_similarity_transform(src_pts, dst_pts, reflective=True):
