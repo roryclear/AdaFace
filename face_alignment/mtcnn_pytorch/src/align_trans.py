@@ -9,7 +9,7 @@ import cv2
 # from scipy.linalg import lstsq
 # from scipy.ndimage import geometric_transform  # , map_coordinates
 
-from mtcnn_pytorch.src.matlab_cp2tform import get_similarity_transform_for_cv2
+from mtcnn_pytorch.src.matlab_cp2tform import get_similarity_transform_for_cv2, get_similarity_transform, cvt_tform_mat_for_cv2
 
 # reference facial points, a list of coordinates (x,y)
 REFERENCE_FACIAL_POINTS = [
@@ -211,5 +211,9 @@ def warp_and_crop_face(src_img, facial_pts, reference_pts=None, crop_size=(96, 1
     ref_pts = np.float32(reference_pts)
     src_pts = np.float32(facial_pts)
     tfm = get_similarity_transform_for_cv2(src_pts, ref_pts)
+
+    trans, _ = get_similarity_transform(src_pts, ref_pts, True)
+    tfm = cvt_tform_mat_for_cv2(trans)
+
     face_img = cv2.warpAffine(src_img, tfm, (crop_size[0], crop_size[1]))
     return face_img
