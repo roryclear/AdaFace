@@ -68,7 +68,6 @@ def warp_affine_np(img, matrix, output_shape):
     output[valid_mask] = interpolated
     return output
 
-
 def align_face_np(img, facial_points, reference_points, output_size=(112, 112)):
     h, w = img.shape[:2]
     
@@ -89,8 +88,8 @@ def align_face_np(img, facial_points, reference_points, output_size=(112, 112)):
     right_eye_rot = rotate_point(right_eye, center, -angle)
     
     # 2. SCALE: Match eye distance to reference
-    current_eye_dist = np.linalg.norm(right_eye_rot - left_eye_rot)
-    ref_eye_dist = np.linalg.norm(ref_right - ref_left)
+    current_eye_dist = np.sqrt(np.sum((right_eye_rot - left_eye_rot) ** 2))
+    ref_eye_dist = np.sqrt(np.sum((ref_right - ref_left) ** 2))
     scale = ref_eye_dist / current_eye_dist
     
     # 3. TRANSLATION: Center on reference
@@ -98,9 +97,6 @@ def align_face_np(img, facial_points, reference_points, output_size=(112, 112)):
     ref_center = (ref_left + ref_right) / 2
     
     # Build transformation matrix: scale and translate
-    # First, translate to origin, scale, then translate to ref center
-    # Combined: [scale, 0, tx]
-    #            [0, scale, ty]
     tx = ref_center[0] - current_center[0] * scale
     ty = ref_center[1] - current_center[1] * scale
     
@@ -113,9 +109,9 @@ def align_face_np(img, facial_points, reference_points, output_size=(112, 112)):
         [scale * cos_a, -scale * sin_a, scale * (center[0] - cos_a * center[0] + sin_a * center[1]) + tx],
         [scale * sin_a, scale * cos_a, scale * (center[1] - sin_a * center[0] - cos_a * center[1]) + ty]
     ])
+    
     img_aligned = warp_affine_np(img, combined_matrix, output_size)
     return img_aligned
-
 
 def img_to_face(orig):
     h, w = orig.shape[:2]
