@@ -95,6 +95,8 @@ def img_to_face(orig):
         detections[0][11] -= detections[0][1]
         detections[0][4:] /= ((x2-x1) / 112)
         if (x2 - x1) < 60: return # min size of 60 for now?
+
+
         cropped = orig[int(x1):int(x2), int(y1):int(y2)]
         face_img = cv2.resize(cropped, (112, 112))
         face_img = cv2.cvtColor(face_img, cv2.COLOR_RGB2BGR)
@@ -114,18 +116,7 @@ if __name__ == '__main__':
     [faces[8], faces[9]],   # nose (kp2)
     [faces[10], faces[11]]] # mouth (kp3) → duplicate
 
-    cv2.imwrite("my_pic.jpg", cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    print(facial4points, "RORY")
 
-    points = [(int(pt[0]), int(pt[1])) for pt in facial4points]
-    colors = [(0, 255, 0), (255, 0, 0), (0, 0, 255), (255, 255, 0)]
-
-    for point, color in zip(points, colors): 
-        cv2.circle(img, point, radius=4, color=color, thickness=-1)
-
-    # NOW save the image with points
-    cv2.imwrite("my_pic_drawn.jpg", cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    cv2.imwrite("my_pic.jpg", cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
     aligned_face = align_face_simple(img, facial4points, REFERENCE_FACIAL_POINTS)
 
