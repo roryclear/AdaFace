@@ -6,7 +6,6 @@ Created on Mon Apr 24 15:43:29 2017
 import numpy as np
 import cv2
 from numpy.linalg import inv, lstsq
-from numpy.linalg import matrix_rank as rank
 
 # from scipy.linalg import lstsq
 # from scipy.ndimage import geometric_transform  # , map_coordinates
@@ -209,7 +208,6 @@ def get_affine_transform_matrix(src_pts, dst_pts):
     return tfm
 
 def findNonreflectiveSimilarity(uv, xy):
-    K = 2
     M = xy.shape[0]
     x = xy[:, 0].reshape((-1, 1))
     y = xy[:, 1].reshape((-1, 1))
@@ -221,11 +219,8 @@ def findNonreflectiveSimilarity(uv, xy):
     u = uv[:, 0].reshape((-1, 1))
     v = uv[:, 1].reshape((-1, 1))
     U = np.vstack((u, v))
-    if rank(X) >= 2 * K:
-        r, _, _, _ = lstsq(X, U)
-        r = np.squeeze(r)
-    else:
-        raise Exception('cp2tform:twoUniquePointsReq')
+    r, _, _, _ = lstsq(X, U)
+    r = np.squeeze(r)
 
     sc = r[0]
     ss = r[1]
@@ -238,13 +233,13 @@ def findNonreflectiveSimilarity(uv, xy):
     ])
     T = inv(Tinv)
     T[:, 2] = np.array([0, 0, 1])
-    return T, Tinv
+    return T
 
 def findSimilarity(uv, xy):
-    trans1, _ = findNonreflectiveSimilarity(uv, xy)
+    trans1 = findNonreflectiveSimilarity(uv, xy)
     xyR = xy
     xyR[:, 0] = -1 * xyR[:, 0]
-    trans2r, _ = findNonreflectiveSimilarity(uv, xyR)
+    trans2r = findNonreflectiveSimilarity(uv, xyR)
     TreflectY = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]])
     trans2 = np.dot(trans2r, TreflectY)
 
