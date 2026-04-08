@@ -22,8 +22,8 @@ if __name__ == '__main__':
 
     # The ys are correct but not the Xs?
     facial5points = [
-    [faces[6], faces[7]],   # left eye (kp1)
-    [faces[4], faces[5]],   # right eye (kp0)
+    [faces[4], faces[5]],   # left eye (kp1)
+    [faces[6], faces[7]],   # right eye (kp0)
     [faces[8], faces[9]],   # nose (kp2)
     [faces[10], faces[11]], # mouth (kp3) → duplicate
     [faces[10], faces[11]]
