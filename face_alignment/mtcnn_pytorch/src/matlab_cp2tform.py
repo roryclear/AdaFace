@@ -44,11 +44,8 @@ def tforminv(trans, uv):
     return xy
 
 
-def findNonreflectiveSimilarity(uv, xy, options=None):
-
-    options = {'K': 2}
-
-    K = options['K']
+def findNonreflectiveSimilarity(uv, xy):
+    K = 2
     M = xy.shape[0]
     x = xy[:, 0].reshape((-1, 1))  # use reshape to keep a column vector
     y = xy[:, 1].reshape((-1, 1))  # use reshape to keep a column vector

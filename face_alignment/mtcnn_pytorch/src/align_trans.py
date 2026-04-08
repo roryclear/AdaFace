@@ -207,12 +207,11 @@ def get_affine_transform_matrix(src_pts, dst_pts):
     return tfm
 
 
-def findSimilarity(uv, xy, options=None):
-    options = {'K': 2}
-    trans1, _ = findNonreflectiveSimilarity(uv, xy, options)
+def findSimilarity(uv, xy):
+    trans1, _ = findNonreflectiveSimilarity(uv, xy)
     xyR = xy
     xyR[:, 0] = -1 * xyR[:, 0]
-    trans2r, _ = findNonreflectiveSimilarity(uv, xyR, options)
+    trans2r, _ = findNonreflectiveSimilarity(uv, xyR)
     TreflectY = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]])
     trans2 = np.dot(trans2r, TreflectY)
 
