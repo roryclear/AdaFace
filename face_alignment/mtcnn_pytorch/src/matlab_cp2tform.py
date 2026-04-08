@@ -225,39 +225,8 @@ def cvt_tform_mat_for_cv2(trans):
 
 
 def get_similarity_transform_for_cv2(src_pts, dst_pts, reflective=True):
-    """
-    Function:
-    ----------
-        Find Similarity Transform Matrix 'cv2_trans' which could be
-        directly used by cv2.warpAffine():
-            u = src_pts[:, 0]
-            v = src_pts[:, 1]
-            x = dst_pts[:, 0]
-            y = dst_pts[:, 1]
-            [x, y].T = cv_trans * [u, v, 1].T
-
-    Parameters:
-    ----------
-        @src_pts: Kx2 np.array
-            source points, each row is a pair of coordinates (x, y)
-        @dst_pts: Kx2 np.array
-            destination points, each row is a pair of transformed
-            coordinates (x, y)
-        reflective: True or False
-            if True:
-                use reflective similarity transform
-            else:
-                use non-reflective similarity transform
-
-    Returns:
-    ----------
-        @cv2_trans: 2x3 np.array
-            transform matrix from src_pts to dst_pts, could be directly used
-            for cv2.warpAffine()
-    """
-    trans, trans_inv = get_similarity_transform(src_pts, dst_pts, reflective)
+    trans, _ = get_similarity_transform(src_pts, dst_pts, reflective)
     cv2_trans = cvt_tform_mat_for_cv2(trans)
-
     return cv2_trans
 
 
