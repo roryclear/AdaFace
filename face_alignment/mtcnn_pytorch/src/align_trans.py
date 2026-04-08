@@ -210,7 +210,6 @@ def get_affine_transform_matrix(src_pts, dst_pts):
 def warp_and_crop_face(src_img, facial_pts, reference_pts=None, crop_size=(96, 112)):
     ref_pts = np.float32(reference_pts)
     src_pts = np.float32(facial_pts)
-    tfm = get_similarity_transform_for_cv2(src_pts, ref_pts)
 
     trans, _ = get_similarity_transform(src_pts, ref_pts, True)
     tfm = cvt_tform_mat_for_cv2(trans)
