@@ -14,10 +14,64 @@ mtcnn_model = mtcnn.MTCNN(device='cpu', crop_size=(112, 112))
 
 REFERENCE_FACIAL_POINTS = [
     [38.29459953, 51.69630051],
-    [73.53179932, 51.50139999],
+    [73.53179932, 51.69630051],
     [56, 71.73660278],
     [56, 92.3655014 ]
 ]
+
+def align_face_simple(img, facial_points, reference_points):
+    """
+    Simple alignment: rotate to make eyes horizontal, then scale and translate
+    to match reference points.
+    """
+    # Extract points
+    left_eye = np.array(facial_points[0])
+    right_eye = np.array(facial_points[1])
+    
+    # 1. ROTATION: Make eyes horizontal
+    # Calculate angle between eyes
+    eye_vector = right_eye - left_eye
+    angle = np.degrees(np.arctan2(eye_vector[1], eye_vector[0]))
+    
+    # Rotate image around center
+    h, w = img.shape[:2]
+    center = (w // 2, h // 2)
+    rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+    img_rotated = cv2.warpAffine(img, rotation_matrix, (w, h))
+    
+    # Rotate all facial points
+    points_rotated = []
+    for point in facial_points:
+        pt = np.array([point[0], point[1], 1])
+        new_pt = rotation_matrix @ pt
+        points_rotated.append(new_pt)
+    
+    # 2. SCALE: Match the eye distance to reference
+    current_eye_dist = np.linalg.norm(points_rotated[1] - points_rotated[0])
+    ref_eye_dist = np.linalg.norm(np.array(reference_points[1]) - np.array(reference_points[0]))
+    scale = ref_eye_dist / current_eye_dist
+    
+    # 3. TRANSLATION: Center on reference
+    current_center = np.mean(points_rotated[:2], axis=0)  # center of eyes
+    ref_center = np.mean(reference_points[:2], axis=0)    # center of reference eyes
+    
+    # Apply scale and translation in one matrix
+    h, w = img_rotated.shape[:2]
+    center_pt = (w // 2, h // 2)
+    
+    # Create transformation matrix: scale then translate
+    tx = ref_center[0] - (current_center[0] * scale)
+    ty = ref_center[1] - (current_center[1] * scale)
+    
+    transform_matrix = np.array([
+        [scale, 0, tx],
+        [0, scale, ty]
+    ], dtype=np.float32)
+    
+    # Apply transformation
+    output_size = (112, 112)  # Standard face size
+    img_aligned = cv2.warpAffine(img_rotated, transform_matrix, output_size)
+    return img_aligned
 
 def img_to_face(orig):
     h, w = orig.shape[:2]
@@ -72,6 +126,10 @@ if __name__ == '__main__':
     # NOW save the image with points
     cv2.imwrite("my_pic_drawn.jpg", cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     cv2.imwrite("my_pic.jpg", cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
+    aligned_face = align_face_simple(img, facial4points, REFERENCE_FACIAL_POINTS)
+
+    cv2.imwrite("aligned_simple.jpg", cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB))
 
     print(facial4points, "RORY")
 
