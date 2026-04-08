@@ -31,29 +31,11 @@ def rotate_point(point, center, angle_rad):
     y_new = sin_a * (x - cx) + cos_a * (y - cy) + cx
     return np.array([x_new, y_new])
 
-def bilinear_interpolate(img, x, y):
-    h, w = img.shape[:2]
-    
-    # Check bounds
-    if x < 0 or x >= w-1 or y < 0 or y >= h-1: return np.zeros(img.shape[2]) if len(img.shape) == 3 else 0
-    
-    x0, y0 = int(np.floor(x)), int(np.floor(y))
-    x1, y1 = min(x0 + 1, w-1), min(y0 + 1, h-1)
-    
-    dx, dy = x - x0, y - y0
-    
-    top = img[y0, x0] * (1 - dx) + img[y0, x1] * dx
-    bottom = img[y1, x0] * (1 - dx) + img[y1, x1] * dx
-    return top * (1 - dy) + bottom * dy
-
-
 def warp_affine_np(img, matrix, output_shape):
-    out_h, out_w = output_shape[:2]    
-    output = np.zeros((out_h, out_w, img.shape[2]), dtype=img.dtype)
-    
+    out_h, out_w = output_shape[:2]
+    in_h, in_w = img.shape[:2]
     a, b, tx = matrix[0]
     c, d, ty = matrix[1]
-
     det = a * d - b * c
     inv_a = d / det
     inv_b = -b / det
@@ -61,13 +43,31 @@ def warp_affine_np(img, matrix, output_shape):
     inv_d = a / det
     inv_tx = (b * ty - d * tx) / det
     inv_ty = (c * tx - a * ty) / det
-    for y_out in range(out_h):
-        for x_out in range(out_w):
-            x_in = inv_a * x_out + inv_b * y_out + inv_tx
-            y_in = inv_c * x_out + inv_d * y_out + inv_ty
-            output[y_out, x_out] = bilinear_interpolate(img, x_in, y_in)
-    
+    y_out, x_out = np.ogrid[:out_h, :out_w]
+    x_in = inv_a * x_out + inv_b * y_out + inv_tx
+    y_in = inv_c * x_out + inv_d * y_out + inv_ty
+    valid_mask = (x_in >= 0) & (x_in < in_w - 1) & (y_in >= 0) & (y_in < in_h - 1)
+    output = np.zeros((out_h, out_w, img.shape[2]), dtype=img.dtype)
+    x_in_valid = x_in[valid_mask]
+    y_in_valid = y_in[valid_mask]
+    x0 = np.floor(x_in_valid).astype(int)
+    y0 = np.floor(y_in_valid).astype(int)
+    x1 = x0 + 1
+    y1 = y0 + 1
+    x0 = np.clip(x0, 0, in_w - 1)
+    y0 = np.clip(y0, 0, in_h - 1)
+    x1 = np.clip(x1, 0, in_w - 1)
+    y1 = np.clip(y1, 0, in_h - 1)
+    dx = x_in_valid - x0
+    dy = y_in_valid - y0
+    dx = dx[:, np.newaxis]
+    dy = dy[:, np.newaxis]
+    top = img[y0, x0] * (1 - dx) + img[y0, x1] * dx
+    bottom = img[y1, x0] * (1 - dx) + img[y1, x1] * dx
+    interpolated = top * (1 - dy) + bottom * dy
+    output[valid_mask] = interpolated
     return output
+
 
 def align_face_np(img, facial_points, reference_points, output_size=(112, 112)):
     h, w = img.shape[:2]
